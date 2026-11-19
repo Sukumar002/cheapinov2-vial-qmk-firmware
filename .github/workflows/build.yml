@@ -30,6 +30,11 @@ jobs:
           path: qmk_firmware
           submodules: recursive
 
+      - name: Apply Cheapino Vial default-combo initialization
+        run: |
+          git -C qmk_firmware apply --check ../patches/vial-default-combos.patch
+          git -C qmk_firmware apply ../patches/vial-default-combos.patch
+
       - name: Install Cheapino keyboard source
         run: |
           rm -rf qmk_firmware/keyboards/cheapino
