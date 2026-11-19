@@ -41,7 +41,7 @@ jobs:
       - name: Convert QMK keymap C to JSON
         working-directory: qmk_firmware
         run: |
-          qmk c2json -kb cheapino -km vial keyboards/cheapino/keymaps/vial/keymap.c -o /tmp/cheapino-keymap.json
+          qmk c2json --no-cpp -kb cheapino -km vial keyboards/cheapino/keymaps/vial/keymap.c -o /tmp/cheapino-keymap.json
 
       - name: Install Keymap Drawer
         run: |
