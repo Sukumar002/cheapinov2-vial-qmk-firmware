@@ -1,0 +1,68 @@
+diff --git a/quantum/vial.c b/quantum/vial.c
+--- a/quantum/vial.c
++++ b/quantum/vial.c
+@@
+ #include "dynamic_keymap.h"
++#include "eeconfig.h"
+ 
+ #include "quantum.h"
+@@
+ combo_t key_combos[VIAL_COMBO_ENTRIES] = { };
+ 
+ uint16_t key_combos_keys[VIAL_COMBO_ENTRIES][5];
+ 
++#ifdef CHEAPINO_VIAL_DEFAULT_COMBOS
++/*
++ * Vial stores combos in EEPROM, rather than in the compiled keymap. Seed the
++ * Cheapino defaults once when the combo table is still empty. The keyboard
++ * EEPROM marker prevents deliberately-cleared or user-edited combos from
++ * being overwritten on later boots.
++ */
++#define CHEAPINO_VIAL_DEFAULT_COMBOS_MAGIC 0x4348504E
++
++static void cheapino_seed_default_combos(void) {
++    if (eeconfig_read_kb() == CHEAPINO_VIAL_DEFAULT_COMBOS_MAGIC) {
++        return;
++    }
++
++    bool has_existing_combo = false;
++    for (size_t i = 0; i < VIAL_COMBO_ENTRIES; ++i) {
++        vial_combo_entry_t entry = {0};
++        if (dynamic_keymap_get_combo(i, &entry) == 0 &&
++            (entry.input[0] != KC_NO || entry.input[1] != KC_NO ||
++             entry.input[2] != KC_NO || entry.input[3] != KC_NO ||
++             entry.output != KC_NO)) {
++            has_existing_combo = true;
++            break;
++        }
++    }
++
++    if (!has_existing_combo) {
++        static const vial_combo_entry_t defaults[] = {
++            {{KC_J, KC_K, KC_NO, KC_NO}, LALT_T(KC_BSPC)},
++            {{KC_D, KC_F, KC_NO, KC_NO}, LALT_T(KC_TAB)},
++            {{KC_S, KC_D, KC_NO, KC_NO}, LGUI_T(KC_GRV)},
++            {{KC_K, KC_L, KC_NO, KC_NO}, LGUI_T(KC_DEL)},
++            {{KC_J, KC_L, KC_NO, KC_NO}, LCTL_T(KC_QUOT)},
++            {{KC_S, KC_F, KC_NO, KC_NO}, LCTL_T(KC_ESC)},
++        };
++        _Static_assert(sizeof(defaults) / sizeof(defaults[0]) <= VIAL_COMBO_ENTRIES,
++                       "VIAL_COMBO_ENTRIES is too small for Cheapino defaults");
++        for (size_t i = 0; i < sizeof(defaults) / sizeof(defaults[0]); ++i) {
++            dynamic_keymap_set_combo(i, &defaults[i]);
++        }
++    }
++
++    eeconfig_update_kb(CHEAPINO_VIAL_DEFAULT_COMBOS_MAGIC);
++}
++#endif
++
+ static void reload_combo(void) {
+@@
+ /* reload from eeprom */
+ 
++#ifdef CHEAPINO_VIAL_DEFAULT_COMBOS
++cheapino_seed_default_combos();
++#endif
++
+ for (size_t i = 0; i < VIAL_COMBO_ENTRIES; ++i) {
