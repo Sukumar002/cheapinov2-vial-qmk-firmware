@@ -49,7 +49,7 @@ jobs:
 
       - name: Parse keymap and add Vial combos
         run: |
-          keymap parse --columns 12 --layer-names Base Function Navigation Adjust Mouse Transparent --quiet /tmp/cheapino-keymap.json --output /tmp/cheapino-parsed.yaml
+          keymap parse --columns 12 --layer-names Base Function Navigation Adjust Mouse Transparent -q /tmp/cheapino-keymap.json -o /tmp/cheapino-parsed.yaml
           python3 - <<'PY'
           import yaml
           from pathlib import Path
