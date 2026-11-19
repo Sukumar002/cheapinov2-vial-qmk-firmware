@@ -7,7 +7,7 @@ diff --git a/quantum/vial.c b/quantum/vial.c
  #include "quantum.h"
  #include "vial_generated_keyboard_definition.h"
  
-@@ -555,12 +556,61 @@
+@@ -555,11 +556,60 @@
  #ifdef VIAL_COMBO_ENABLE
  combo_t key_combos[VIAL_COMBO_ENTRIES] = { };
  uint16_t key_combos_keys[VIAL_COMBO_ENTRIES][5];
