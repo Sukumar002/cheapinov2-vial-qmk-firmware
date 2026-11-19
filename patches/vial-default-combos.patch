@@ -1,13 +1,13 @@
 diff --git a/quantum/vial.c b/quantum/vial.c
 --- a/quantum/vial.c
 +++ b/quantum/vial.c
-@@ -21,6 +21,7 @@
+@@ -21,4 +21,5 @@
  #include "dynamic_keymap.h"
 +#include "eeconfig.h"
  #include "quantum.h"
  #include "vial_generated_keyboard_definition.h"
  
-@@ -556,11 +557,51 @@
+@@ -556,11 +557,60 @@
  #ifdef VIAL_COMBO_ENABLE
  combo_t key_combos[VIAL_COMBO_ENTRIES] = { };
  uint16_t key_combos_keys[VIAL_COMBO_ENTRIES][5];
