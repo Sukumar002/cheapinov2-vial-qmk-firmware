@@ -43,6 +43,10 @@ void keyboard_post_init_kb(void) {
 
     // Flash a little on start
     defer_exec(50, flash_led, NULL);
+
+    // Chain the keymap-level hook. Without this call, keyboard_post_init_user()
+    // is never reached because this keyboard overrides keyboard_post_init_kb().
+    keyboard_post_init_user();
 }
 
 // This is just to be able to declare constants as they appear in the qmk console
