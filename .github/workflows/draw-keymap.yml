@@ -1,0 +1,100 @@
+name: Draw Cheapino Keymap
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "cheapino/keymaps/vial/keymap.c"
+      - "cheapino/keyboard.json"
+      - ".github/workflows/draw-keymap.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cheapino-keymap-drawing-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  draw:
+    name: Parse and render Cheapino keymap
+    runs-on: ubuntu-latest
+    container: ghcr.io/qmk/qmk_cli
+
+    steps:
+      - name: Check out this repository
+        uses: actions/checkout@v4
+
+      - name: Check out Vial-QMK parser environment
+        uses: actions/checkout@v4
+        with:
+          repository: vial-kb/vial-qmk
+          ref: vial
+          path: qmk_firmware
+          submodules: recursive
+
+      - name: Install Cheapino keyboard definition
+        run: |
+          rm -rf qmk_firmware/keyboards/cheapino
+          cp -R cheapino qmk_firmware/keyboards/cheapino
+
+      - name: Convert QMK keymap C to JSON
+        working-directory: qmk_firmware
+        run: |
+          qmk c2json -kb cheapino -km vial keyboards/cheapino/keymaps/vial/keymap.c -o /tmp/cheapino-keymap.json
+
+      - name: Install Keymap Drawer
+        run: |
+          python3 -m pip install --user --upgrade keymap-drawer==0.23.0
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Parse keymap and add Vial combos
+        run: |
+          keymap parse --columns 12 --layer-names Base Function Navigation Adjust Mouse Transparent --quiet /tmp/cheapino-keymap.json --output /tmp/cheapino-parsed.yaml
+          python3 - <<'PY'
+          import yaml
+          from pathlib import Path
+
+          parsed = Path("/tmp/cheapino-parsed.yaml")
+          data = yaml.safe_load(parsed.read_text())
+
+          # Use the repository's exact custom 37-position Cheapino geometry.
+          data["layout"] = {
+              "qmk_info_json": "cheapino/keyboard.json",
+              "layout_name": "LAYOUT_split_3x5_3",
+          }
+
+          # QMK's c2json format does not preserve Vial's EEPROM-seeded combos.
+          # Empty layers means these combos are drawn on every layer.
+          data["combos"] = [
+              {"p": [17, 18], "k": {"t": "Backspace", "h": "Alt"}},
+              {"p": [13, 14], "k": {"t": "Tab", "h": "Alt"}},
+              {"p": [12, 13], "k": {"t": "Grave", "h": "Gui"}},
+              {"p": [18, 19], "k": {"t": "Delete", "h": "Gui"}},
+              {"p": [17, 19], "k": {"t": "Quote", "h": "Ctrl"}},
+              {"p": [12, 14], "k": {"t": "Escape", "h": "Ctrl"}},
+          ]
+
+          Path("CheapinoV2-keymap-drawer.yaml").write_text(
+              yaml.safe_dump(data, sort_keys=False, allow_unicode=True)
+          )
+          PY
+
+      - name: Draw SVG
+        run: |
+          keymap draw CheapinoV2-keymap-drawer.yaml --output CheapinoV2.svg
+          test -s CheapinoV2.svg
+          echo "SVG generated:"
+          ls -lh CheapinoV2.svg
+          echo "Layer count:"
+          grep -o 'class="layer' CheapinoV2.svg | wc -l || true
+
+      - name: Upload keymap drawing
+        uses: actions/upload-artifact@v4
+        with:
+          name: cheapino-keymap-drawing-${{ github.sha }}
+          path: |
+            CheapinoV2.svg
+            CheapinoV2-keymap-drawer.yaml
+          if-no-files-found: error
+          retention-days: 30
