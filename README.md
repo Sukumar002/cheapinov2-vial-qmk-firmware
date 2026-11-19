@@ -11,3 +11,10 @@ cheapino directory: the source code for compilation of this firmware. To success
 cheapino_vial-no-encoder.uf2: old version of the firmware created before I got the encoders working.
 
 dvorak-qwerty-brm-bleys43-no-encoder.vil: my old keymap save that is used with the old firmware without working encoders.
+
+
+## Sukumar's Cheapino Vial keymap
+
+The `CheapinoV2.vil` file supplied for this setup is the Vial import/export reference for the 14-layer layout and six configured combos. Import it in Vial after flashing the matching Vial-enabled firmware. The firmware exposes 14 dynamic layers and evaluates combos from layer 0, so the same six combos remain available while any other layer is active.
+
+Firmware source: `cheapino/keymaps/vial/`. The Vial keyboard definition and unlock configuration remain in that directory.
