@@ -18,7 +18,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // Seed the Vial combo table after EEPROM and Vial initialization have completed.
 // The marker makes this a one-time default: later user edits (including clearing
 // all combos) are never overwritten on subsequent boots.
-#define CHEAPINO_VIAL_DEFAULT_COMBOS_MAGIC 0x4348504E
+#define CHEAPINO_VIAL_DEFAULT_COMBOS_MAGIC 0x4348504F
 
 void keyboard_post_init_user(void) {
     if (eeconfig_read_kb() == CHEAPINO_VIAL_DEFAULT_COMBOS_MAGIC) {
