@@ -4,5 +4,8 @@
 #define VIAL_UNLOCK_COMBO_ROWS { 6, 2 }
 #define VIAL_UNLOCK_COMBO_COLS { 11, 5 }
 
-#define DYNAMIC_KEYMAP_LAYER_COUNT 10
+#define DYNAMIC_KEYMAP_LAYER_COUNT 14
+
+// Evaluate Vial combos using layer 0 keycodes, regardless of the active layer.
+#define COMBO_ONLY_FROM_LAYER 0
 
