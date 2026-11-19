@@ -45,8 +45,7 @@ jobs:
 
       - name: Install Keymap Drawer
         run: |
-          python3 -m pip install --user --upgrade keymap-drawer==0.23.0
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          python3 -m pip install --upgrade keymap-drawer==0.23.0
 
       - name: Parse keymap and add Vial combos
         run: |
