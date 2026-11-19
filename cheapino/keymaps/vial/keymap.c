@@ -1,5 +1,9 @@
 #include QMK_KEYBOARD_H
 
+#include "dynamic_keymap.h"
+#include "eeconfig.h"
+#include "vial.h"
+
 // The first five layers are restored from the user's CheapinoV2.vil.
 // Layer 5 is intentionally transparent throughout for future customization.
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -11,8 +15,55 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [5] = LAYOUT_split_3x5_3(KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS),
 };
 
-// The six default Vial combos are seeded into the Vial EEPROM table by the
-// Cheapino-specific Vial-QMK initialization patch. They remain editable in Vial.
+// Seed the Vial combo table after EEPROM and Vial initialization have completed.
+// The marker makes this a one-time default: later user edits (including clearing
+// all combos) are never overwritten on subsequent boots.
+#define CHEAPINO_VIAL_DEFAULT_COMBOS_MAGIC 0x4348504E
+
+void keyboard_post_init_user(void) {
+    if (eeconfig_read_kb() == CHEAPINO_VIAL_DEFAULT_COMBOS_MAGIC) {
+        return;
+    }
+
+    bool has_existing_combo = false;
+    for (uint8_t i = 0; i < VIAL_COMBO_ENTRIES; ++i) {
+        vial_combo_entry_t entry = {0};
+        if (dynamic_keymap_get_combo(i, &entry) != 0) {
+            continue;
+        }
+        if (entry.input[0] != KC_NO || entry.input[1] != KC_NO ||
+            entry.input[2] != KC_NO || entry.input[3] != KC_NO ||
+            entry.output != KC_NO) {
+            has_existing_combo = true;
+            break;
+        }
+    }
+
+    if (!has_existing_combo) {
+        static const vial_combo_entry_t defaults[] = {
+            {{KC_J, KC_K, KC_NO, KC_NO}, LALT_T(KC_BSPC)},
+            {{KC_D, KC_F, KC_NO, KC_NO}, LALT_T(KC_TAB)},
+            {{KC_S, KC_D, KC_NO, KC_NO}, LGUI_T(KC_GRV)},
+            {{KC_K, KC_L, KC_NO, KC_NO}, LGUI_T(KC_DEL)},
+            {{KC_J, KC_L, KC_NO, KC_NO}, LCTL_T(KC_QUOT)},
+            {{KC_S, KC_F, KC_NO, KC_NO}, LCTL_T(KC_ESC)},
+        };
+        _Static_assert(sizeof(defaults) / sizeof(defaults[0]) <= VIAL_COMBO_ENTRIES,
+                       "VIAL_COMBO_ENTRIES is too small for Cheapino defaults");
+
+        for (uint8_t i = 0; i < sizeof(defaults) / sizeof(defaults[0]); ++i) {
+            if (dynamic_keymap_set_combo(i, &defaults[i]) != 0) {
+                // Do not mark initialization complete if EEPROM rejected a write.
+                return;
+            }
+        }
+    }
+
+    eeconfig_update_kb(CHEAPINO_VIAL_DEFAULT_COMBOS_MAGIC);
+    // vial_init() already ran earlier in keyboard_setup(); reload now that the
+    // defaults have been written so the combo engine sees them immediately.
+    vial_init();
+}
 
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
     [0] = { ENCODER_CCW_CW(KC_VOLU, KC_VOLD) },
