@@ -15,6 +15,6 @@ dvorak-qwerty-brm-bleys43-no-encoder.vil: my old keymap save that is used with t
 
 ## Sukumar's Cheapino Vial keymap
 
-Import the separately supplied `CheapinoV2.vil` file as the Vial layout reference for the 14-layer layout and six configured combos. Import it in Vial after flashing the matching Vial-enabled firmware. The firmware exposes 14 dynamic layers and evaluates combos from layer 0, so the same six combos remain available while any other layer is active.
+The firmware restores layers 0–4 and keeps layer 5 transparent for future customization. It seeds the six combos from `CheapinoV2.vil` into Vial's EEPROM-backed combo table the first time it boots with an empty combo table. The combos remain editable in Vial; the one-time initialization marker prevents a later reboot from restoring defaults over user edits or a deliberate clear. `COMBO_ONLY_FROM_LAYER 0` makes the same combos work while any other layer is active.
 
 Firmware source: `cheapino/keymaps/vial/`. The Vial keyboard definition and unlock configuration remain in that directory.
